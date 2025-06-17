@@ -30,19 +30,24 @@ exports.createLearningPath = async (req, res) => {
 };
 
 // getting learning paths
-exports.getLearningPathByProfile = async (req, res) => {
+// controllers/learningPathController.js
+exports.etLearningPathByProfile = async (req, res) => {
   try {
     const profileId = req.params.profileId;
-    const profile = await UserProfile.findById(profileId).populate('currentLearningPathId');
-    if (!profile || !profile.currentLearningPathId) {
+
+    // 1️⃣  Find the path by ownerProfile
+    const path = await LearningPath.findOne({ ownerProfile: profileId });
+    if (!path) {
       return res.status(404).json({ message: 'No learning path found for this profile' });
     }
 
-    res.status(200).json(profile.currentLearningPathId);
+    // 2️⃣  Return the full learning‑path document
+    res.status(200).json(path);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch learning path', error: err.message });
   }
 };
+
 // mark as complete
 exports.markLessonComplete = async (req, res) => {
   const { profileId, week, topic } = req.body;
