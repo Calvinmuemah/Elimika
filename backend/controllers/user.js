@@ -28,12 +28,37 @@ const register = async (req, res) => {
 // Login
 const login = async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(400).json({ error: "Invalid credentials" });
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+
+    // Corrected line: Include the user object in the response
+    res.json({
+      token,
+      user: { // Send back relevant user data
+        id: user._id, // MongoDB's default ID field
+        name: user.name,
+        email: user.email,
+        // Crucially, include the isOnboarded status
+        isOnboarded: user.isOnboarded,
+        // Include any other profile fields that the frontend needs immediately
+        academicLevel: user.academicLevel, // Make sure these fields exist on your User model
+        careerInterests: user.careerInterests,
+        availableStudyTime: user.availableStudyTime,
+        // ... add any other fields like grades, learning styles if they are part of the initial user object
+      }
+    });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-  res.json({ token });
 };
 
 
