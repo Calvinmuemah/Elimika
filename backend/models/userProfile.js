@@ -3,6 +3,13 @@ const { Schema } = mongoose;
 
 const userProfileSchema = new Schema(
   {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      unique: true // Ensure one profile per user
+    },
+
     academicLevel: {
       type: String,
       enum: [
@@ -25,7 +32,7 @@ const userProfileSchema = new Schema(
       {
         subject: String,
         grade: String,
-        gradingSystem: String                // "A‑F", "Percentage", "GPA"
+        gradingSystem: String
       }
     ],
 
@@ -48,8 +55,8 @@ const userProfileSchema = new Schema(
 
     preferredResources: [String],
 
-    // --- Internal state ---
-    isOnboarded:   { type: Boolean, default: false },
+    isOnboarded: { type: Boolean, default: false },
+
     currentLearningPathId: { type: Schema.Types.ObjectId, ref: 'LearningPath' }
   },
   { timestamps: true }
